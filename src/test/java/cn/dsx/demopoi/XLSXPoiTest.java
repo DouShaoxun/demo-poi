@@ -1,7 +1,9 @@
 package cn.dsx.demopoi;
 
+import cn.dsx.demopoi.utils.DrawImageUtils;
 import cn.dsx.demopoi.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.ShapeTypes;
 import org.apache.poi.util.Units;
 import org.apache.poi.xssf.usermodel.*;
@@ -15,7 +17,14 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static org.apache.poi.ss.usermodel.ClientAnchor.DONT_MOVE_AND_RESIZE;
+
 /**
+ * 文档
+ * Sets the y coordinate within the second cell Note - XSSF and HSSF have a slightly different coordinate system,
+ * values in XSSF are larger by a factor of Units.EMU_PER_PIXEL
+ * https://poi.apache.org/apidocs/4.0/org/apache/poi/xssf/usermodel/XSSFClientAnchor.html
+ *
  * @Classname: PoiTest
  * @Author: Dsx
  * @Date: 2020/07/10/22:57
@@ -55,13 +64,13 @@ public class XLSXPoiTest {
 
 
 
-        /*
+
 
         //====================== 0.jpg ======================//
         ByteArrayOutputStream byteArrayOut_0 = new ByteArrayOutputStream();
         log.info(imagePath + "/0.jpg");
         File image_0 = new File(imagePath + "/0.jpg");
-        BufferedImage user_headImg_0 = ImageIO.read(image_0);
+        BufferedImage user_headImg_0 = DrawImageUtils.drawImage(image_0);
         ImageIO.write(user_headImg_0, "jpg", byteArrayOut_0);
         // 设置图片的属性
         int col1_0 = 1;
@@ -75,23 +84,24 @@ public class XLSXPoiTest {
         patriarch.createPicture(anchor_0, workbook.addPicture(byteArrayOut_0.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
         //====================== 0.jpg ======================//
 
-        */
+
 
 
         //====================== 1.jpg ======================//
+        //ExcelTransferUtils.getMergedRegionPositionRange(sheet, titleElement.getRowIndex(), titleElement.getColIndex());
         ByteArrayOutputStream byteArrayOut_1 = new ByteArrayOutputStream();
         log.info(imagePath + "/1.jpg");
         File image_1 = new File(imagePath + "/1.jpg");
-        BufferedImage user_headImg_1 = ImageIO.read(image_1);
+        BufferedImage user_headImg_1 = DrawImageUtils.drawImage(image_1);
         ImageIO.write(user_headImg_1, "jpg", byteArrayOut_1);
         // 设置图片的属性
-        int col1_1 = 2;
+        int col1_1 = 25;
         int row1_1 = 2;
-        int col2_1 = 22;
+        int col2_1 = 25;
         int row2_1 = 13;
-        XSSFClientAnchor anchor_1 = new XSSFClientAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150, col1_1, row1_1, col2_1, row2_1);
+        ClientAnchor anchor_1 = new XSSFClientAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150000* Units.EMU_PER_PIXEL, col1_1, row1_1, col2_1, row2_1);
         //  Sets the anchor type
-        //anchor_1.setAnchorType(DONT_MOVE_AND_RESIZE);
+        anchor_1.setAnchorType(DONT_MOVE_AND_RESIZE);
         // 插入图片 
         patriarch.createPicture(anchor_1, workbook.addPicture(byteArrayOut_1.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
         //====================== 1.jpg ======================//
@@ -103,7 +113,7 @@ public class XLSXPoiTest {
         ByteArrayOutputStream byteArrayOut_2 = new ByteArrayOutputStream();
         log.info(imagePath + "/2.jpg");
         File image_2 = new File(imagePath + "/2.jpg");
-        BufferedImage user_headImg_2 = ImageIO.read(image_2);
+        BufferedImage user_headImg_2 =  DrawImageUtils.drawImage(image_2);
         ImageIO.write(user_headImg_2, "jpg", byteArrayOut_2);
         // 设置图片的属性
         int col1_2 = 2;
@@ -123,7 +133,7 @@ public class XLSXPoiTest {
         ByteArrayOutputStream byteArrayOut_3 = new ByteArrayOutputStream();
         log.info(imagePath + "/3.jpg");
         File image_3 = new File(imagePath + "/3.jpg");
-        BufferedImage user_headImg_3 = ImageIO.read(image_3);
+        BufferedImage user_headImg_3 = DrawImageUtils.drawImage(image_3);
         ImageIO.write(user_headImg_3, "jpg", byteArrayOut_3);
         // 设置图片的属性
         int col1_3 = 10;
@@ -142,7 +152,7 @@ public class XLSXPoiTest {
         ByteArrayOutputStream byteArrayOut_4 = new ByteArrayOutputStream();
         log.info(imagePath + "/4.jpg");
         File image_4 = new File(imagePath + "/4.jpg");
-        BufferedImage user_headImg_4 = ImageIO.read(image_4);
+        BufferedImage user_headImg_4 = DrawImageUtils.drawImage(image_4);
         ImageIO.write(user_headImg_4, "jpg", byteArrayOut_4);
         // 设置图片的属性
         int col1_4 = 10;
@@ -161,7 +171,7 @@ public class XLSXPoiTest {
         ByteArrayOutputStream byteArrayOut_large = new ByteArrayOutputStream();
         log.info(imagePath + "/large.jpg");
         File image_large = new File(imagePath + "/large.jpg");
-        BufferedImage user_headImg_large = ImageIO.read(image_large);
+        BufferedImage user_headImg_large = DrawImageUtils.drawImage(image_large);
         ImageIO.write(user_headImg_large, "jpg", byteArrayOut_large);
         // 设置图片的属性
         int col1_large = 10;
@@ -180,7 +190,7 @@ public class XLSXPoiTest {
         ByteArrayOutputStream byteArrayOut_middle = new ByteArrayOutputStream();
         log.info(imagePath + "/middle.jpg");
         File image_middle = new File(imagePath + "/middle.jpg");
-        BufferedImage user_headImg_middle = ImageIO.read(image_middle);
+        BufferedImage user_headImg_middle = DrawImageUtils.drawImage(image_middle);
         ImageIO.write(user_headImg_middle, "jpg", byteArrayOut_middle);
         // 设置图片的属性
         int col1_middle = 10;
@@ -199,7 +209,7 @@ public class XLSXPoiTest {
         ByteArrayOutputStream byteArrayOut_small = new ByteArrayOutputStream();
         log.info(imagePath + "/small.jpg");
         File image_small = new File(imagePath + "/small.jpg");
-        BufferedImage user_headImg_small = ImageIO.read(image_small);
+        BufferedImage user_headImg_small = DrawImageUtils.drawImage(image_small);
         ImageIO.write(user_headImg_small, "jpg", byteArrayOut_small);
         // 设置图片的属性
         int col1_small = 10;
@@ -218,11 +228,18 @@ public class XLSXPoiTest {
         */
 
 
-        // 画线 此处3.17无效   3.8版本可以 原因待查
-        XSSFClientAnchor regionr = patriarch.createAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150, 0, 0,  50, 50);
+        // 画线 此处3.15无效   3.8版本可以 原因待查
+        // https://blog.csdn.net/Czhou9468/article/details/103789940
+        XSSFClientAnchor regionr = patriarch.createAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150 , 0, 0, 0, 5);
+        regionr.setAnchorType(3);
         XSSFSimpleShape region1Shapevr = patriarch.createSimpleShape(regionr);
         region1Shapevr.setShapeType(ShapeTypes.LINE);
 
+
+        //HSSFPatriarch drawingPatriarch = sheet.createDrawingPatriarch();
+        //HSSFClientAnchor  regionr = drawingPatriarch.createAnchor(9525*10, 9525*10, 150 * Units.EMU_PER_PIXEL, 150*9525, 0, 0,  50, 50);
+        //HSSFSimpleShape region1Shapevr = patriarch.createSimpleShape(regionr);
+        //region1Shapevr.setShapeType(ShapeTypes.LINE);
 
         workbook.setActiveSheet(0);
         //修改模板内容导出新模板
