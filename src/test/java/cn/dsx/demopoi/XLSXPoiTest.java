@@ -4,6 +4,7 @@ import cn.dsx.demopoi.utils.DrawImageUtils;
 import cn.dsx.demopoi.utils.ExcelUtils;
 import cn.dsx.demopoi.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.ShapeTypes;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -81,17 +82,39 @@ public class XLSXPoiTest {
          *
          * POI中的行高=像素/DPI*72*20
          */
-        int columnIndex =1;
-        int columnWidth = sheet.getColumnWidth(columnIndex);// 单位不是像素，是1/256个字符宽度
-        System.out.println(columnWidth);
-        float columnWidthInPixels = sheet.getColumnWidthInPixels(columnIndex);//  单位是像素
-        System.out.println(columnWidthInPixels);
+        Cell cell = sheet.getRow(2).getCell(2);//获取第4行 第三列
+        int columnIndex = cell.getColumnIndex();
+        int rowIndex = cell.getRowIndex();
+        System.out.println(ExcelUtils.isMergedRegion(sheet, rowIndex, columnIndex));
+        //float columnWidthInPixels = sheet.getColumnWidthInPixels(columnIndex); //  单位不是像素，是1/256个字符宽度  3.8版本没有此方法
+        int columnWidth = sheet.getColumnWidth(columnIndex);//单位是像素
 
-        System.out.println(ExcelUtils.isMergedRegion(sheet,2,2));
-        System.out.println(ExcelUtils.isMergedRegion(sheet,0,0));
+        float heightInPoints = cell.getRow().getHeightInPoints();//  获取的是excel行高的榜值
+        float heightInPointsPoi = cell.getRow().getHeightInPoints() / 72 * 96;//poi高度单位计算
+
+        //======================  ======================//
+
+        System.out.println(ExcelUtils.isMergedRegion(sheet, 2, 2));
+        System.out.println(ExcelUtils.isMergedRegion(sheet, 0, 0));
         CellRangeAddress mergedRegion = ExcelUtils.getMergedRegion(sheet, 2, 2);
+        CellRangeAddress mergedRegion1 = ExcelUtils.getMergedRegion(sheet, 3, 3);
         CellRangeAddress mergedRegion2 = ExcelUtils.getMergedRegion(sheet, 0, 2);
+        int numberOfCells = mergedRegion1.getNumberOfCells();// 获取合并单元格当中 单元格数量
+        System.out.println(numberOfCells);
 
+        // 循环计算 合并单元格 高度和宽度
+        int totalHeight = 0;
+        for (int row = mergedRegion.getFirstRow(); row <= mergedRegion.getLastRow(); row++) {
+            totalHeight += sheet.getRow(row).getHeightInPoints();
+        }
+        System.out.println("totalHeight:" + totalHeight);
+
+        double totalWeight = 0;
+        double totalWeightMillimetres;
+        for (int col = mergedRegion.getFirstColumn(); col <= mergedRegion.getLastColumn(); col++) {
+            totalWeight += sheet.getColumnWidth(col);
+        }
+        totalWeightMillimetres = ExcelUtils.ConvertImageUnits.widthUnits2Millimetres((short) totalWeight);
 
         //====================== 0.jpg ======================//
         ByteArrayOutputStream byteArrayOut_0 = new ByteArrayOutputStream();
@@ -104,11 +127,13 @@ public class XLSXPoiTest {
         int row1_0 = 2;
         int col2_0 = 22;
         int row2_0 = 13;
-        XSSFClientAnchor anchor_0 = new XSSFClientAnchor(0, 0, 100* Units.EMU_PER_PIXEL, (1023-10)* Units.EMU_PER_PIXEL, col1_0, row1_0, col2_0, row2_0);
+        XSSFClientAnchor anchor_0 = new XSSFClientAnchor(0, 0, 100 * Units.EMU_PER_PIXEL, (1023 - 10) * Units.EMU_PER_PIXEL, col1_0, row1_0, col2_0, row2_0);
         //  Sets the anchor type
-        anchor_0.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
+        //anchor_0.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);//3.15
+        anchor_0.setAnchorType(DONT_MOVE_AND_RESIZE);//3.8
         // 插入图片 
-        patriarch.createPicture(anchor_0, workbook.addPicture(byteArrayOut_0.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
+        XSSFPicture picture_0 = patriarch.createPicture(anchor_0, workbook.addPicture(byteArrayOut_0.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
+        //picture_0.resize(1, 1);// 设置缩放比例
         //====================== 0.jpg ======================//
 
 
@@ -255,16 +280,12 @@ public class XLSXPoiTest {
 
         // 画线 此处3.15无效   3.8版本可以 原因待查
         // https://blog.csdn.net/Czhou9468/article/details/103789940
-        XSSFClientAnchor regionr = patriarch.createAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150, 0, 0, 0, 5);
+        XSSFClientAnchor regionr = patriarch.createAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150, 0, 0, 50, 50);
         regionr.setAnchorType(3);
         XSSFSimpleShape region1Shapevr = patriarch.createSimpleShape(regionr);
         region1Shapevr.setShapeType(ShapeTypes.LINE);
 
 
-        //HSSFPatriarch drawingPatriarch = sheet.createDrawingPatriarch();
-        //HSSFClientAnchor  regionr = drawingPatriarch.createAnchor(9525*10, 9525*10, 150 * Units.EMU_PER_PIXEL, 150*9525, 0, 0,  50, 50);
-        //HSSFSimpleShape region1Shapevr = patriarch.createSimpleShape(regionr);
-        //region1Shapevr.setShapeType(ShapeTypes.LINE);
 
         workbook.setActiveSheet(0);
         //修改模板内容导出新模板
