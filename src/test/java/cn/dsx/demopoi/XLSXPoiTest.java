@@ -1,10 +1,12 @@
 package cn.dsx.demopoi;
 
 import cn.dsx.demopoi.utils.DrawImageUtils;
+import cn.dsx.demopoi.utils.ExcelUtils;
 import cn.dsx.demopoi.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.ShapeTypes;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.util.Units;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -62,8 +64,33 @@ public class XLSXPoiTest {
         // sheet只能获取一个
         XSSFDrawing patriarch = sheet.createDrawingPatriarch();
 
+        /**
+         * https://www.cnblogs.com/dtts/p/4741575.html
+         * EXCEL列高度的单位是磅,Apache POI的行高度单位是缇(twip)
+         * 　　DPI = 1英寸内可显示的像素点个数。通常电脑屏幕是96DPI, IPhone4s的屏幕是326DPI, 普通激光黑白打印机是400DPI
+         * 　　要计算POI行高或者Excel的行高，就先把它行转换到英寸，再乘小DPI就可以得到像素
+         * 　　像素= (Excel的行高度/72)*DPI
+         * 所以获取行高的像素值的方法就是： (row.getHeightInPoints() / 72) * 96
+         * 像素 ＝ (磅/72)*DPI
+         *
+         * 像素= (Excel的行高度/72)*DPI
+         *
+         * 像素= (POI中的行高/20/72)*DPI
+         *
+         * Excel的行高度=像素/DPI*72
+         *
+         * POI中的行高=像素/DPI*72*20
+         */
+        int columnIndex =1;
+        int columnWidth = sheet.getColumnWidth(columnIndex);// 单位不是像素，是1/256个字符宽度
+        System.out.println(columnWidth);
+        float columnWidthInPixels = sheet.getColumnWidthInPixels(columnIndex);//  单位是像素
+        System.out.println(columnWidthInPixels);
 
-
+        System.out.println(ExcelUtils.isMergedRegion(sheet,2,2));
+        System.out.println(ExcelUtils.isMergedRegion(sheet,0,0));
+        CellRangeAddress mergedRegion = ExcelUtils.getMergedRegion(sheet, 2, 2);
+        CellRangeAddress mergedRegion2 = ExcelUtils.getMergedRegion(sheet, 0, 2);
 
 
         //====================== 0.jpg ======================//
@@ -73,18 +100,16 @@ public class XLSXPoiTest {
         BufferedImage user_headImg_0 = DrawImageUtils.drawImage(image_0);
         ImageIO.write(user_headImg_0, "jpg", byteArrayOut_0);
         // 设置图片的属性
-        int col1_0 = 1;
-        int row1_0 = 11;
-        int col2_0 = 5;
-        int row2_0 = 20;
-        XSSFClientAnchor anchor_0 = new XSSFClientAnchor(0, 0, 0, 0, col1_0, row1_0, col2_0, row2_0);
+        int col1_0 = 2;
+        int row1_0 = 2;
+        int col2_0 = 22;
+        int row2_0 = 13;
+        XSSFClientAnchor anchor_0 = new XSSFClientAnchor(0, 0, 100* Units.EMU_PER_PIXEL, (1023-10)* Units.EMU_PER_PIXEL, col1_0, row1_0, col2_0, row2_0);
         //  Sets the anchor type
         anchor_0.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
         // 插入图片 
         patriarch.createPicture(anchor_0, workbook.addPicture(byteArrayOut_0.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
         //====================== 0.jpg ======================//
-
-
 
 
         //====================== 1.jpg ======================//
@@ -99,7 +124,7 @@ public class XLSXPoiTest {
         int row1_1 = 2;
         int col2_1 = 25;
         int row2_1 = 13;
-        ClientAnchor anchor_1 = new XSSFClientAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150000* Units.EMU_PER_PIXEL, col1_1, row1_1, col2_1, row2_1);
+        ClientAnchor anchor_1 = new XSSFClientAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150000 * Units.EMU_PER_PIXEL, col1_1, row1_1, col2_1, row2_1);
         //  Sets the anchor type
         anchor_1.setAnchorType(DONT_MOVE_AND_RESIZE);
         // 插入图片 
@@ -230,7 +255,7 @@ public class XLSXPoiTest {
 
         // 画线 此处3.15无效   3.8版本可以 原因待查
         // https://blog.csdn.net/Czhou9468/article/details/103789940
-        XSSFClientAnchor regionr = patriarch.createAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150 , 0, 0, 0, 5);
+        XSSFClientAnchor regionr = patriarch.createAnchor(0, 0, 150 * Units.EMU_PER_PIXEL, 150, 0, 0, 0, 5);
         regionr.setAnchorType(3);
         XSSFSimpleShape region1Shapevr = patriarch.createSimpleShape(regionr);
         region1Shapevr.setShapeType(ShapeTypes.LINE);
