@@ -4,13 +4,13 @@ import cn.dsx.demopoi.utils.DrawImageUtils;
 import cn.dsx.demopoi.utils.ExcelUtils;
 import cn.dsx.demopoi.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFSimpleShape;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.util.Units;
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFSimpleShape;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.apache.poi.ss.usermodel.ClientAnchor.DONT_MOVE_AND_RESIZE;
+//import static org.apache.poi.ss.usermodel.ClientAnchor.DONT_MOVE_AND_RESIZE;
 
 /**
  * 文档

@@ -131,7 +131,7 @@ public class ExcelUtils {
         }
         return new CellRangeAddress(row, row, column, column);
     }
-
+    //1023和255指的是每个单元格被切分的份数，指定的是最后的单元格的最右下角的一个点
     public static final int TOTAL_COLUMN_COORDINATE_POSITIONS = 1023; // MB
     public static final int TOTAL_ROW_COORDINATE_POSITIONS = 255;     // MB
 

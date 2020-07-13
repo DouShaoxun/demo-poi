@@ -6,15 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.util.Units;
-import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
-import org.apache.poi.xssf.usermodel.XSSFDrawing;
-import org.apache.poi.xssf.usermodel.XSSFSimpleShape;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.imageio.ImageIO;
-import javax.rmi.CORBA.Util;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigDecimal;
@@ -203,6 +199,7 @@ public class PoiTest {
     public static void buildExcelImage2(String imagePath, Sheet sheet, Drawing patriarch, Workbook workbook, int firstRow, int firstCol) throws IOException {
         ByteArrayOutputStream byteArrayOut_0 = new ByteArrayOutputStream();
         XSSFClientAnchor anchor_0 = new XSSFClientAnchor();
+        anchor_0.setAnchorType(XSSFClientAnchor.MOVE_AND_RESIZE);//移动
         log.info(imagePath);
         System.out.println(firstRow + "," + firstCol);
         File image_0 = new File(imagePath);
@@ -212,39 +209,42 @@ public class PoiTest {
         int imgX = user_headImg_0.getWidth();// 图片宽度
         // 获取合并单元格
         CellRangeAddress mergedRegion_0 = ExcelUtils.getMergedRegion(sheet, firstRow, firstCol);
-        // 循环计算 合并单元格 高度和宽度
+
+        // 循环计算 合并单元格 高度和宽度         begin
         int totalHeight_0 = 0;
         for (int row = mergedRegion_0.getFirstRow(); row <= mergedRegion_0.getLastRow(); row++) {
+            //System.out.println(sheet.getRow(row).getHeightInPoints());
+            //返回以点大小度量的行高。如果未设置高度，则返回默认工作表值
+            // 16.5/72*96= 22像素
             totalHeight_0 += sheet.getRow(row).getHeightInPoints();
         }
-        double cellWidth = 0;
-        for (int col = mergedRegion_0.getFirstColumn(); col <= mergedRegion_0.getLastColumn(); col++) {
-            cellWidth += sheet.getColumnWidthInPixels(col);
-        }
-
-
-        // 循环计算 合并单元格 高度和宽度
-        for (int row = mergedRegion_0.getFirstRow(); row <= mergedRegion_0.getLastRow(); row++) {
-            totalHeight_0 += sheet.getRow(row).getHeightInPoints();
-        }
+        ;
+        // 转换成毫米
         double totalHeightMillimetres = ExcelUtils.ConvertImageUnits.pointsToMillimeters(totalHeight_0);
-        double totalWidth = 0;
 
-        double totalWeightMillimetres;
+
+        double cellWidth = 0;
+        double totalWidth = 0;
         for (int col = mergedRegion_0.getFirstColumn(); col <= mergedRegion_0.getLastColumn(); col++) {
-            totalWidth += sheet.getColumnWidth(col);
-            cellWidth += sheet.getColumnWidthInPixels(col);//
+            // 12.4444275  获取像素
+            cellWidth += sheet.getColumnWidthInPixels(col);
+            totalWidth += sheet.getColumnWidth(col); //单位不是像素，是1/256个字符宽度
         }
-        totalWeightMillimetres = ExcelUtils.ConvertImageUnits.widthUnits2Millimetres((short) totalWidth);
-        BigDecimal cellRatioCanvas = ratioCanvas(totalWeightMillimetres, totalHeightMillimetres);// 单元格比例
-        BigDecimal imageRatioCanvas = ratioCanvas(imgX, imgY);// 图片比例
-        boolean flagType = false; //缩放类型
+        //象素数bai / DPI = 英寸数
+        //英寸数 * 25.4 = 毫米du数
+        // 转换成毫米
+        double totalWeightMillimetres = cellWidth / 96 * 25.4;
+        // 循环计算 合并单元格 高度和宽度         end
+        
+        BigDecimal cellRatioCanvas = ratioCanvas(totalWeightMillimetres, totalHeightMillimetres);   // 单元格比例
+        BigDecimal imageRatioCanvas = ratioCanvas(imgX, imgY);                                      // 图片比例
         double needWeightMillimetres = 0D;
         double needHeightMillimetres = 0D;
 
+
         if (imageRatioCanvas.compareTo(cellRatioCanvas) >= 0) {
             // 图片过宽 根据图片的宽和单元格的宽比进行缩放
-            System.out.println("图片过宽 根据图片的宽和单元格的宽比进行缩放");
+            System.out.println("根据宽度缩放");
             int needRowNum = 0;
             double hasHeightMM = 0D;
             needHeightMillimetres = Math.abs(totalWeightMillimetres / imageRatioCanvas.doubleValue());
@@ -266,32 +266,38 @@ public class PoiTest {
             int pictureHeightCoordinates = 0;
             pictureHeightCoordinates = (int) (spaceHeightMM * rowCoordinatesPerMM);
 
-
             // 计算偏移位置
             int i = (mergedRegion_0.getLastRow() - mergedRegion_0.getFirstRow() - needRowNum) / 2;//左右留白
-            int dx1 = 100;
-            int dy1 = 50;
-            int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - 100);
-            System.out.println("pictureHeightCoordinates:" + pictureHeightCoordinates);
-            int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - pictureHeightCoordinates - 50);
+            int dx1 = 5;
+            int dy1 = 5;
+            int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - 5);
+            int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - pictureHeightCoordinates - 5);
             int col1 = mergedRegion_0.getFirstColumn();
             int row1 = mergedRegion_0.getFirstRow();
             int col2 = mergedRegion_0.getLastColumn();
             int row2 = mergedRegion_0.getFirstRow() + needRowNum - 1 + i;
-            anchor_0.setDx1((int) Math.round(dx1 * Units.EMU_PER_PIXEL * 7 / 256f));
-            anchor_0.setDy1((int) Math.round(dy1 * Units.EMU_PER_POINT));
-            anchor_0.setDx2((int) Math.round(-2000 * Units.EMU_PER_PIXEL * 7 / 256f));
-            anchor_0.setDy2((int) Math.round(-2000 * Units.EMU_PER_POINT));
+
+            anchor_0.setDx1((int) Math.round(dx1 * XSSFShape.EMU_PER_PIXEL));
+            anchor_0.setDy1((int) Math.round(dy1 * XSSFShape.EMU_PER_PIXEL));
+            anchor_0.setDx2((int) Math.round(dx2 * XSSFShape.EMU_PER_PIXEL));
+            anchor_0.setDy2((int) Math.round(dy2 * XSSFShape.EMU_PER_PIXEL));
+
             anchor_0.setCol1(col1);
             anchor_0.setRow1(row1);
-            System.out.println("col2:" + col2);
-            System.out.println("row2:" + row2);
             anchor_0.setCol2(col2);
             anchor_0.setRow2(row2);
+            System.out.println("dx1 ：" + anchor_0.getDx1());
+            System.out.println("dy1 ：" + anchor_0.getDy1());
+            System.out.println("dx2 ：" + anchor_0.getDx2());
+            System.out.println("dy2 ：" + anchor_0.getDy2());
+            System.out.println("col1：" + anchor_0.getCol1());
+            System.out.println("row1：" + anchor_0.getRow1());
+            System.out.println("col2：" + anchor_0.getCol2());
+            System.out.println("row2：" + anchor_0.getRow2());
 
         } else {
-            //
-            System.out.println("图片过高 根据图片的高和单元格的高比进行缩放");
+
+            System.out.println("根据高度缩放");
             needWeightMillimetres = Math.abs(totalHeightMillimetres * imageRatioCanvas.doubleValue());
             int needColNum = 0;
             double hasWeightMM = 0D;
@@ -320,25 +326,36 @@ public class PoiTest {
             if (needColNum <= mergedRegion_0.getLastColumn() - mergedRegion_0.getFirstColumn() + 1) {
                 i = (mergedRegion_0.getLastColumn() - mergedRegion_0.getFirstColumn() - needColNum + 1) / 2;
             }
-            int dx1 = 100;
-            int dy1 = 50;
-            int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - pictureWidthCoordinates - 100);
-            int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - 50);
+            int dx1 = 10;
+            int dy1 = 10;
+            int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - pictureWidthCoordinates - 10);
+            int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - 10);
             int col1 = mergedRegion_0.getFirstColumn() + i;
             int row1 = (mergedRegion_0.getFirstRow());
             int col2 = (mergedRegion_0.getFirstColumn() + needColNum - 1 + i);
             int row2 = (mergedRegion_0.getLastRow());
 
-            anchor_0.setDx1((int) Math.round(dx1 * Units.EMU_PER_PIXEL * 7 / 256f));
+            anchor_0.setDx1((int) Math.round(dx1 * XSSFShape.EMU_PER_PIXEL));
             anchor_0.setDy1((int) Math.round(dy1 * Units.EMU_PER_POINT));
-            anchor_0.setDx2((int) Math.round(dx2 * Units.EMU_PER_PIXEL * 7 / 256f));
+            anchor_0.setDx2((int) Math.round(dx2 * XSSFShape.EMU_PER_PIXEL));
             anchor_0.setDy2((int) Math.round(dy2 * Units.EMU_PER_POINT));
 
             anchor_0.setCol1(col1);
             anchor_0.setRow1(row1);
             anchor_0.setCol2(col2);
             anchor_0.setRow2(row2);
+
+            System.out.println("dx1 ：" + anchor_0.getDx1());
+            System.out.println("dy1 ：" + anchor_0.getDy1());
+            System.out.println("dx2 ：" + anchor_0.getDx2());
+            System.out.println("dy2 ：" + anchor_0.getDy2());
+            System.out.println("col1：" + anchor_0.getCol1());
+            System.out.println("row1：" + anchor_0.getRow1());
+            System.out.println("col2：" + anchor_0.getCol2());
+            System.out.println("row2：" + anchor_0.getRow2());
+
         }
+
         Picture picture_0 = patriarch.createPicture(anchor_0, workbook.addPicture(byteArrayOut_0.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
 
     }
