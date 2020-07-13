@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.util.Units;
 
 /**
  * @Classname: ExcelUtils
@@ -130,6 +131,7 @@ public class ExcelUtils {
         }
         return new CellRangeAddress(row, row, column, column);
     }
+
     public static final int TOTAL_COLUMN_COORDINATE_POSITIONS = 1023; // MB
     public static final int TOTAL_ROW_COORDINATE_POSITIONS = 255;     // MB
 
@@ -221,4 +223,53 @@ public class ExcelUtils {
             return points / 72D * 25.4;
         }
     }
+
+
+    //参考 http://cn.voidcc.com/question/p-wotldxzk-ot.html
+    // set padding between picture and gridlines so gridlines would not covered by the picture
+    private static final double paddingSize = 2;
+    private static final int padding = Units.toEMU(paddingSize);
+
+    public static int[] calCellAnchor(double cellX, double cellY, int imgX, int imgY) {
+        // assume Y has fixed padding first
+        return calCoordinate(true, cellX, cellY, imgX, imgY);
+        //return calCoordinate(true,  cellY, cellX,imgX, imgY);
+    }
+
+    public static int[] calCoordinate(boolean fixTop, double cellX, double cellY, int imgX, int imgY) {
+
+        double ratioImg = ((double) imgX) / imgY;// 图片比例
+        double ratioCell = ((double) cellX) / cellY;// 单元格比例
+        int x = imgX;
+        System.out.println("ratioImg:"+ratioImg);
+        System.out.println("ratioCell:"+ratioCell);
+        // 2 * paddingSize是两侧留白
+        //if (ratioImg > ratioCell) {
+        //    x = imgY;
+        //    x = (int) Math.round(Units.toEMU(cellX - 2 * paddingSize) * ratioImg);
+        //    x = (Units.toEMU(cellY) - x) / 2;
+        //
+        //}else{
+        //    x = imgX;
+        //    x = (int) Math.round(Units.toEMU(cellY - 2 * paddingSize) * ratioImg);
+        //    x = (Units.toEMU(cellX) - x) / 2;
+        //}
+
+        x = (int) Math.round(Units.toEMU(cellY - 2 * paddingSize) * ratioImg);
+        x = (Units.toEMU(cellX) - x)/2;
+
+        if (x < padding) {
+            return calCoordinate(false, cellY, cellX, imgY, imgX);
+        }
+        return calDirection(fixTop, x);
+    }
+
+    public static int[] calDirection(boolean fixTop, int x) {
+        if (fixTop) {
+            return new int[]{x, padding, -x, -padding};
+        } else {
+            return new int[]{padding, x, -padding, -x};
+        }
+    }
+
 }
