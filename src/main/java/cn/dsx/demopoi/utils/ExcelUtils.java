@@ -130,7 +130,8 @@ public class ExcelUtils {
         }
         return new CellRangeAddress(row, row, column, column);
     }
-
+    public static final int TOTAL_COLUMN_COORDINATE_POSITIONS = 1023; // MB
+    public static final int TOTAL_ROW_COORDINATE_POSITIONS = 255;     // MB
 
     public static class ConvertImageUnits {
 
