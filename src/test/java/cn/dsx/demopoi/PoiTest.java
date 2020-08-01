@@ -38,6 +38,7 @@ public class PoiTest {
         String imagePath = courseFile + "/static/image";
         log.info("image根路径：" + imagePath);
 
+
         // 读入excel文件
         File file = new File(filePath);
         InputStream in = new FileInputStream(file);
