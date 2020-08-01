@@ -139,7 +139,6 @@ public class PoiTest {
         String outputFilePath = exprotPath + format + ".xlsx";
         log.info("输出路径：" + outputFilePath);
 
-
         FileOutputStream outputStream = new FileOutputStream(outputFilePath);
         workbook.write(outputStream);
 
@@ -671,7 +670,6 @@ public class PoiTest {
             System.out.println("row1：" + anchor_0.getRow1());
             System.out.println("col2：" + anchor_0.getCol2());
             System.out.println("row2：" + anchor_0.getRow2());
-
         }
 
         Picture picture_0 = patriarch.createPicture(anchor_0, workbook.addPicture(byteArrayOut_0.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
