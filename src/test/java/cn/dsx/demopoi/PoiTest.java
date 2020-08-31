@@ -127,7 +127,7 @@ public class PoiTest {
 
         }
         // 单独测试
-        int k = 5;
+        int k = 8;
         //buildExcelImage3(imagePath + "/1.jpg", sheet, patriarch, workbook, coordinate[k][0], coordinate[k][1]);
         buildExcelImage4(imagePath + "/1.jpg", sheet, patriarch, workbook, coordinate[k][0], coordinate[k][1]);
 
@@ -775,18 +775,36 @@ public class PoiTest {
 
         double widthRatio = imgWidthPixel / cellWidthPixel;//宽
         double heightRatio = imgHeightPixel / cellHeightPixel;//高
-        double ratio = Math.max(widthRatio, heightRatio);  // 根据大的来缩放
-        //double ratio = Math.max(widthRatio, heightRatio);  // 根据小的来缩放
-        log.info("widthRatio: " + widthRatio);
-        log.info("heightRatio: " + heightRatio);
-        log.info("ratio: " + ratio);
+        double ratio = 1;
+        double needWidthPixel = 0;// 计算需要的宽高 单位毫米
+        double needHeightPixel = 0;
 
-        double needWidthPixel = Math.abs(imgWidthPixel / ratio);// 计算需要的宽高 单位毫米
-        double needHeightPixel = Math.abs(imgHeightPixel / ratio);
-        log.info("imgWidthPixel:" + imgWidthPixel);
-        log.info("needWidthPixel:" + needWidthPixel);
-        log.info("imgHeightPixel:" + imgHeightPixel);
-        log.info("needHeightPixel:" + needHeightPixel);
+        if (imgWidthPixel > cellWidthPixel && imgHeightPixel > cellHeightPixel) {
+            // 图片的宽和高  均大于单元格
+            log.info("图片的宽和高均大于单元格");
+            ratio = Math.max(widthRatio, heightRatio);
+            needWidthPixel = Math.abs(imgWidthPixel / ratio);// 计算需要的宽高
+            needHeightPixel = Math.abs(imgHeightPixel / ratio);
+        } else if (imgWidthPixel < cellWidthPixel && imgHeightPixel < cellHeightPixel) {
+            // 图片的宽和高  均小于单元格
+            log.info("图片的宽和高均小于单元格");
+            ratio = Math.max(widthRatio, heightRatio);
+            needWidthPixel = Math.abs(imgWidthPixel / ratio);
+            needHeightPixel = Math.abs(imgHeightPixel / ratio);
+        } else if (imgWidthPixel > cellWidthPixel && imgHeightPixel < cellHeightPixel) {
+            // 图片的宽大于单元格的宽,且图片的高小于单元格的高
+            log.info("图片的宽大于单元格的宽,且图片的高小于单元格的高");
+            ratio = heightRatio;
+            needWidthPixel = Math.abs(imgWidthPixel / ratio);
+            needHeightPixel = cellHeightPixel;
+        } else if (imgWidthPixel < cellWidthPixel && imgHeightPixel > cellHeightPixel) {
+            // 图片的宽小于单元格的宽,且图片的高大于单元格的高
+            log.info("图片的宽小于单元格的宽,且图片的高大于单元格的高");
+            ratio = widthRatio;
+            needWidthPixel = cellWidthPixel;
+            needHeightPixel = Math.abs(imgHeightPixel / ratio);
+        }
+
 
         // 计算宽所在的列
         int needColNum = 0;
@@ -828,7 +846,7 @@ public class PoiTest {
         rowCoordinatesPerPixel = ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightPixels;
         int pictureHeightCoordinates = (int) (spaceHeightMM * rowCoordinatesPerPixel);
 
-        int spacePixel = 1;// 四周留白
+        int spacePixel = 0;// 四周留白
         int dx1 = spacePixel;
         int dy1 = spacePixel;
         int dx2 = ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - pictureWidthCoordinates + spacePixel;
@@ -836,7 +854,6 @@ public class PoiTest {
 
         //int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS);
         //int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - 26);
-
 
         int col1 = mergedRegion.getFirstColumn();
         int row1 = mergedRegion.getFirstRow();
@@ -853,6 +870,19 @@ public class PoiTest {
         xssfClientAnchor.setCol2(col2);
         xssfClientAnchor.setRow2(row2);
 
+        log.info("widthRatio: " + widthRatio);
+        log.info("heightRatio: " + heightRatio);
+        log.info("ratio: " + ratio);
+
+        log.info("imgWidthPixel:" + imgWidthPixel);
+        log.info("cellWidthPixel:" + cellWidthPixel);
+        log.info("needWidthPixel:" + needWidthPixel);
+        log.info("hasWidthPixel:" + hasWidthPixel);
+
+        log.info("imgHeightPixel:" + imgHeightPixel);
+        log.info("cellHeightPixel:" + cellHeightPixel);
+        log.info("needHeightPixel:" + needHeightPixel);
+        log.info("hasHeightPixel:" + hasHeightPixel);
 
         log.info("dx1 ：" + dx1);
         log.info("dy1 ：" + dy1);
