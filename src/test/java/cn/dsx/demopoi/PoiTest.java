@@ -115,7 +115,17 @@ public class PoiTest {
             //buildExcelImage3(imagePath + "/middle.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
             //buildExcelImage3(imagePath + "/small.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
         }
+        for (int i = 0; i < coordinate.length; i++) {
+            //buildExcelImage4(imagePath + "/0.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/1.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/2.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/3.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/4.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/large.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/middle.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
+            //buildExcelImage4(imagePath + "/small.jpg", sheet, patriarch, workbook, coordinate[i][0], coordinate[i][1]);
 
+        }
         // 单独测试
         int k = 5;
         //buildExcelImage3(imagePath + "/1.jpg", sheet, patriarch, workbook, coordinate[k][0], coordinate[k][1]);
@@ -751,80 +761,81 @@ public class PoiTest {
         CellRangeAddress mergedRegion = ExcelUtils.getMergedRegion(sheet, firstRow, firstCol);
 
         //======================================循环计算 合并单元格 高度和宽度  begin====================================
-        int cellHeight = 0;
+        int cellHeightPixel = 0;
         for (int row = mergedRegion.getFirstRow(); row <= mergedRegion.getLastRow(); row++) {
             // getHeightInPoints()方法获取的是点（磅），就是excel设置的行高，1英寸有72磅，一般显示屏一英寸是96个像素
-            cellHeight += sheet.getRow(row).getHeightInPoints() / 72 * 96;
+            cellHeightPixel += sheet.getRow(row).getHeightInPoints() / 72 * 96;
         }
-        double cellWidth = 0;
+        double cellWidthPixel = 0;
         for (int col = mergedRegion.getFirstColumn(); col <= mergedRegion.getLastColumn(); col++) {
-            cellWidth += sheet.getColumnWidthInPixels(col);
+            cellWidthPixel += sheet.getColumnWidthInPixels(col);
         }
         //======================================循环计算 合并单元格 高度和宽度  end====================================
 
 
-        double widthRatio = imgWidthPixel / cellWidth;//宽
-        double heightRatio = imgHeightPixel / cellHeight;//高
+        double widthRatio = imgWidthPixel / cellWidthPixel;//宽
+        double heightRatio = imgHeightPixel / cellHeightPixel;//高
         double ratio = Math.max(widthRatio, heightRatio);  // 根据大的来缩放
+        //double ratio = Math.max(widthRatio, heightRatio);  // 根据小的来缩放
         log.info("widthRatio: " + widthRatio);
         log.info("heightRatio: " + heightRatio);
         log.info("ratio: " + ratio);
 
-        double needWidthPixels = Math.abs(imgWidthPixel / ratio);// 计算需要的宽高 单位毫米
-        double needHeightPixels = Math.abs(imgHeightPixel / ratio);
+        double needWidthPixel = Math.abs(imgWidthPixel / ratio);// 计算需要的宽高 单位毫米
+        double needHeightPixel = Math.abs(imgHeightPixel / ratio);
         log.info("imgWidthPixel:" + imgWidthPixel);
-        log.info("needWidthPixels:" + needWidthPixels);
+        log.info("needWidthPixel:" + needWidthPixel);
         log.info("imgHeightPixel:" + imgHeightPixel);
-        log.info("needHeightPixels:" + needHeightPixels);
+        log.info("needHeightPixel:" + needHeightPixel);
 
         // 计算宽所在的列
         int needColNum = 0;
-        double hasWidthPixels = 0D;
+        double hasWidthPixel = 0D;
         for (int col = mergedRegion.getFirstColumn(); col <= mergedRegion.getLastColumn(); col++) {
-            if (hasWidthPixels >= needWidthPixels) {
+            if (hasWidthPixel >= needWidthPixel) {
                 break;
             }
-            hasWidthPixels += sheet.getColumnWidthInPixels(col);
+            hasWidthPixel += sheet.getColumnWidthInPixels(col);
             needColNum++;
         }
 
         // 计算横轴空白
-        double spaceWidthPixels = hasWidthPixels - needWidthPixels;
-        double colCoordinatesPerMM = 0.0D;
+        double spaceWidthPixels = hasWidthPixel - needWidthPixel;
+        double colCoordinatesPerPixels = 0.0D;
         // 获得宽所在的列
         float columnWidthPixel = sheet.getColumnWidthInPixels(mergedRegion.getFirstColumn() + needColNum - 1);
-        colCoordinatesPerMM = ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS / columnWidthPixel;
-        int pictureWidthCoordinates = (int) (spaceWidthPixels * colCoordinatesPerMM);
+        colCoordinatesPerPixels = ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS / columnWidthPixel;
+        int pictureWidthCoordinates = (int) (spaceWidthPixels * colCoordinatesPerPixels);
 
 
         //  =====================
 
         // 计算纵轴空白
         int needRowNum = 0;
-        double hasHeightPixels = 0D;
+        double hasHeightPixel = 0D;
         for (int row = mergedRegion.getFirstRow(); row <= mergedRegion.getLastRow(); row++) {
-            if (hasHeightPixels >= needHeightPixels) {
+            if (hasHeightPixel >= needHeightPixel) {
                 break;
             }
-            hasHeightPixels += sheet.getRow(row).getHeightInPoints() / 72 * 96;
+            hasHeightPixel += sheet.getRow(row).getHeightInPoints() / 72 * 96;
             needRowNum++;
         }
 
-        double spaceHeightMM = hasHeightPixels - needHeightPixels;//计算空白  单位毫米
-        double rowCoordinatesPerMM = 0.0D;
-        double rowHeightMM = sheet.getRow(mergedRegion.getFirstRow() + needRowNum - 1).getHeightInPoints() / 72 * 96;
+        double spaceHeightMM = hasHeightPixel - needHeightPixel;//计算空白
+        double rowCoordinatesPerPixel = 0.0D;
+        double rowHeightPixels = sheet.getRow(mergedRegion.getFirstRow() + needRowNum - 1).getHeightInPoints() / 72 * 96;
         //每个单元格宽度分成1023份  高分成256份
-        rowCoordinatesPerMM = ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightMM;
-        int pictureHeightCoordinates = (int) (spaceHeightMM * rowCoordinatesPerMM);
+        rowCoordinatesPerPixel = ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightPixels;
+        int pictureHeightCoordinates = (int) (spaceHeightMM * rowCoordinatesPerPixel);
 
-        int spaceMM = 0;// 四周留白
-        int dx1 = spaceMM;
-        int dy1 = spaceMM;
-        int dx2 = ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - pictureWidthCoordinates - spaceMM;
-        int dy2 = ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - pictureHeightCoordinates - spaceMM;
+        int spacePixel = 1;// 四周留白
+        int dx1 = spacePixel;
+        int dy1 = spacePixel;
+        int dx2 = ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - pictureWidthCoordinates + spacePixel;
+        int dy2 = ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - pictureHeightCoordinates + spacePixel;
 
-        //int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS - 0);
-        //int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - 26 - 0);
+        //int dx2 = (ExcelUtils.TOTAL_COLUMN_COORDINATE_POSITIONS);
+        //int dy2 = (ExcelUtils.TOTAL_ROW_COORDINATE_POSITIONS - 26);
 
 
         int col1 = mergedRegion.getFirstColumn();
